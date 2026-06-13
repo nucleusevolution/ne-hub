@@ -335,7 +335,7 @@ function initMsal(){
     msalInstance.initialize().then(function(){
       msalInstance.handleRedirectPromise().then(function(resp){
         if(resp && resp.accessToken){ graphToken = resp.accessToken; onSignedIn(); }
-        else { showSignInBtn(); }
+        else { trySilent(); }
       }).catch(function(){ showSignInBtn(); });
     });
   } catch(e){ fallbackMode(); }
