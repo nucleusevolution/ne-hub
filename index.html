@@ -294,7 +294,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;li
 <script>
 /* ── MSAL config — Microsoft identity login for Graph API ── */
 var MSAL_CONFIG = {
-  clientId: '0bca32f1-be25-42df-9ce5-bb2276bb6001',
+  clientId: 'YOUR_APP_CLIENT_ID',
   authority: 'https://login.microsoftonline.com/common',
   redirectUri: 'https://nucleusevolution.github.io/ne-hub/'
 };
@@ -341,14 +341,13 @@ function initMsal(){
   } catch(e){ fallbackMode(); }
 }
 
-function trysilent(){
+function trySilent(){
   var accounts = msalInstance.getAllAccounts();
   if(!accounts.length){ showSignInBtn(); return; }
   msalInstance.acquireTokenSilent({ scopes: ['Calendars.Read','Presence.Read.All','User.Read'], account: accounts[0] })
     .then(function(r){ graphToken = r.accessToken; onSignedIn(); })
     .catch(function(){ showSignInBtn(); });
 }
-var trySilent = trysilent;
 
 function showSignInBtn(){
   document.getElementById('signin-btn').style.display = 'flex';
