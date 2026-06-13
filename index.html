@@ -333,10 +333,16 @@ function initMsal(){
       cache: { cacheLocation: 'sessionStorage' }
     });
     msalInstance.initialize().then(function(){
+      document.getElementById('signin-btn').style.display = 'flex';
+      setCalStatus('warn','Sign in to load live calendar');
+      fallbackPresence();
       msalInstance.handleRedirectPromise().then(function(resp){
-        if(resp && resp.accessToken){ graphToken = resp.accessToken; onSignedIn(); }
-        else { showSignInBtn(); trySilent(); }
-      }).catch(function(){ showSignInBtn(); });
+        if(resp && resp.accessToken){ 
+          graphToken = resp.accessToken; 
+          document.getElementById('signin-btn').style.display = 'none';
+          onSignedIn(); 
+        }
+      }).catch(function(){ });
     });
   } catch(e){ fallbackMode(); }
 }
