@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Nucleus Evolution — Team Hub</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.5;color:#1a1a2e;background:#f5f6fa;-webkit-font-smoothing:antialiased}
+:root{
+  --navy:#3B4DA0;--violet:#6B3FA6;--amber:#E8A020;--emerald:#1DB88A;
+  --navy-light:#eef0fa;--violet-light:#f3eefb;--amber-light:#fdf3e0;--emerald-light:#e5f8f2;
+  --text-main:#1a1a2e;--text-muted:#6b7280;--text-hint:#9ca3af;
+  --border:rgba(59,77,160,0.12);--surface:#ffffff;--bg:#f5f6fa;
+  --radius:10px;--radius-sm:6px;
+}
+.ne-hub{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.header{display:flex;align-items:center;justify-content:space-between;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;margin-bottom:16px}
+.header-left{display:flex;align-items:center;gap:14px}
+.logo-mark{width:42px;height:42px;background:linear-gradient(135deg,var(--navy) 0%,var(--violet) 100%);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;letter-spacing:-1px;flex-shrink:0}
+.brand-name{font-size:17px;font-weight:600;color:var(--navy);letter-spacing:-0.3px}
+.brand-tagline{font-size:12px;color:var(--text-muted);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:12px}
+.live-badge{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--emerald);font-weight:500;background:var(--emerald-light);border-radius:50px;padding:3px 10px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--emerald);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.date-chip{font-size:12px;color:var(--text-muted);background:var(--bg);border-radius:50px;padding:4px 12px;border:1px solid var(--border)}
+.signin-btn{display:none;align-items:center;gap:6px;padding:7px 14px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit}
+.signin-btn:hover{background:var(--violet)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;align-items:center;gap:12px}
+.stat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.si-navy{background:var(--navy-light);color:var(--navy)}
+.si-violet{background:var(--violet-light);color:var(--violet)}
+.si-amber{background:var(--amber-light);color:var(--amber)}
+.si-emerald{background:var(--emerald-light);color:var(--emerald)}
+.stat-num{font-size:22px;font-weight:600;line-height:1;color:var(--text-main)}
+.stat-lbl{font-size:11px;color:var(--text-muted);margin-top:2px}
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;overflow:hidden}
+.panel-title{font-size:12px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.panel-title svg{width:14px;height:14px;opacity:.7}
+.cal-toggle{display:flex;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;overflow:hidden;width:fit-content}
+.cal-btn{font-size:12px;font-weight:500;padding:6px 14px;border:none;background:transparent;cursor:pointer;color:var(--text-muted);font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s}
+.cal-btn.active{background:var(--navy);color:#fff}
+.cal-btn:first-child{border-right:1px solid var(--border)}
+.av-m-sm{width:18px;height:18px;border-radius:50%;background:var(--navy-light);color:var(--navy);font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center}
+.av-a-sm{width:18px;height:18px;border-radius:50%;background:var(--emerald-light);color:#0d7a5c;font-size:9px;font-weight:600;display:inline-flex;align-items:center;justify-content:center}
+.cal-btn.active .av-m-sm,.cal-btn.active .av-a-sm{background:rgba(255,255,255,0.25);color:#fff}
+.filter-row{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap}
+.ftab{font-size:11px;font-weight:500;padding:4px 11px;border-radius:50px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text-muted);font-family:inherit;transition:all .15s}
+.ftab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.cal-list{display:flex;flex-direction:column}
+.cal-event{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.cal-event:last-child{border-bottom:none}
+.cal-date-block{min-width:40px;text-align:center;background:var(--bg);border-radius:8px;padding:5px 6px;border:1px solid var(--border)}
+.cal-day{font-size:20px;font-weight:600;line-height:1;color:var(--text-main)}
+.cal-month{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)}
+.cal-body{flex:1}
+.cal-title-text{font-size:13px;font-weight:500;line-height:1.3;color:var(--text-main)}
+.cal-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.cal-badge{display:inline-block;font-size:10px;font-weight:500;padding:1px 7px;border-radius:50px;margin-left:5px;vertical-align:middle;line-height:1.6}
+.b-biz{background:var(--navy-light);color:var(--navy)}
+.b-travel{background:var(--emerald-light);color:#0d7a5c}
+.b-health{background:var(--amber-light);color:#9a6800}
+.b-event{background:var(--violet-light);color:var(--violet)}
+.cal-loading{color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center}
+.cal-error{font-size:12px;color:var(--text-muted);padding:12px 0;text-align:center;line-height:1.6}
+.graph-status{font-size:11px;color:var(--text-muted);padding:6px 0 2px;display:flex;align-items:center;gap:5px}
+.gs-dot{width:6px;height:6px;border-radius:50%;background:#9ca3af;flex-shrink:0}
+.gs-dot.ok{background:var(--emerald)}
+.gs-dot.err{background:#ef4444}
+.gs-dot.warn{background:var(--amber)}
+.proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.proj-tile{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;text-decoration:none;transition:background .15s,border-color .15s}
+.proj-tile:hover{background:var(--navy-light);border-color:var(--navy)}
+.proj-icon-block{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.proj-tile-name{font-size:12px;font-weight:600;color:var(--text-main);line-height:1.2}
+.proj-tile-type{font-size:10px;color:var(--text-muted);margin-top:1px}
+.team-list{display:flex;flex-direction:column;gap:10px}
+.team-member{display:flex;align-items:center;gap:10px}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;position:relative}
+.av-m{background:var(--navy-light);color:var(--navy)}
+.av-a{background:var(--emerald-light);color:#0d7a5c}
+.status-ring{position:absolute;bottom:0;right:0;width:11px;height:11px;border-radius:50%;border:2px solid white;background:#9ca3af}
+.s-available{background:var(--emerald)}
+.s-busy{background:var(--amber)}
+.s-away{background:#9ca3af}
+.member-name{font-size:13px;font-weight:500;color:var(--text-main)}
+.member-role{font-size:11px;color:var(--text-muted)}
+.member-status-label{margin-left:auto;font-size:11px;font-weight:500;padding:2px 9px;border-radius:50px}
+.sl-available{background:var(--emerald-light);color:#0d7a5c}
+.sl-busy{background:var(--amber-light);color:#9a6800}
+.sl-away{background:#f3f4f6;color:#6b7280}
+.team-divider{border:none;border-top:1px solid var(--border);margin:2px 0}
+.search-wrap{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:8px;padding:7px 12px;margin-bottom:12px;background:var(--bg)}
+.search-wrap:focus-within{border-color:var(--navy)}
+.search-wrap svg{width:15px;height:15px;color:var(--text-muted);flex-shrink:0}
+.search-wrap input{border:none;background:transparent;outline:none;font-size:13px;color:var(--text-main);flex:1;font-family:inherit}
+.search-wrap input::placeholder{color:var(--text-muted)}
+.recent-label{font-size:11px;color:var(--text-hint);margin-bottom:7px;font-weight:500}
+.recent-file{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--radius-sm);text-decoration:none;color:inherit;transition:background .12s}
+.recent-file:hover{background:var(--bg)}
+.recent-file svg{width:14px;height:14px;color:var(--violet);flex-shrink:0}
+.recent-file-name{font-size:11px;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-file-date{font-size:10px;color:var(--text-hint);margin-left:auto;flex-shrink:0;padding-left:8px}
+.qlink-list{display:flex;flex-direction:column;gap:4px}
+.qlink{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius-sm);text-decoration:none;color:var(--text-muted);font-size:12px;font-weight:500;transition:background .13s,color .13s}
+.qlink:hover{background:var(--navy-light);color:var(--navy)}
+.qlink svg{width:15px;height:15px;flex-shrink:0}
+.skeleton{background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:4px;height:12px;margin:6px 0}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@media(max-width:800px){.main-grid{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="ne-hub">
+
+  <div class="header">
+    <div class="header-left">
+      <div class="logo-mark">NE</div>
+      <div>
+        <div class="brand-name">Nucleus Evolution</div>
+        <div class="brand-tagline">Team Hub &middot; Perth, WA</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="live-badge"><span class="live-dot"></span>Live</span>
+      <span class="date-chip" id="today-date"></span>
+      <button class="signin-btn" id="signin-btn" onclick="signIn()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        Sign in for live data
+      </button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-icon si-navy">&#128193;</div><div><div class="stat-num" id="stat-projects">--</div><div class="stat-lbl">Active projects</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-violet">&#128197;</div><div><div class="stat-num" id="stat-events">--</div><div class="stat-lbl">Upcoming events</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-emerald">&#128101;</div><div><div class="stat-num">2</div><div class="stat-lbl">Team members</div></div></div>
+    <div class="stat-card"><div class="stat-icon si-amber">&#127970;</div><div><div class="stat-num">3</div><div class="stat-lbl">Sectors</div></div></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="panel">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Calendar
+      </div>
+      <div class="cal-toggle">
+        <button class="cal-btn active" id="btn-mick" onclick="switchCal('mick')"><span class="av-m-sm">ML</span> Mick</button>
+        <button class="cal-btn" id="btn-andrea" onclick="switchCal('andrea')"><span class="av-a-sm">AM</span> Andrea</button>
+      </div>
+      <div class="filter-row">
+        <button class="ftab active" onclick="filterCal('all',this)">All</button>
+        <button class="ftab" onclick="filterCal('biz',this)">Business</button>
+        <button class="ftab" onclick="filterCal('travel',this)">Travel</button>
+        <button class="ftab" onclick="filterCal('health',this)">Other</button>
+      </div>
+      <div class="cal-list" id="cal-list"><div class="cal-loading">Sign in to load calendar</div></div>
+      <div class="graph-status"><span class="gs-dot" id="cal-dot"></span><span id="cal-status-text">Waiting for sign in</span></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        Current projects
+        <span id="proj-count" style="margin-left:auto;font-size:10px;color:var(--text-hint);font-weight:400;text-transform:none;letter-spacing:0"></span>
+      </div>
+      <div class="proj-grid" id="proj-grid">
+        <div class="cal-loading" style="grid-column:1/-1">Sign in to load projects</div>
+      </div>
+      <div class="graph-status"><span class="gs-dot" id="proj-dot"></span><span id="proj-status-text">Waiting for sign in</span></div>
+    </div>
+  </div>
+
+  <div class="bottom-grid">
+    <div class="panel">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Team status
+      </div>
+      <div class="team-list">
+        <div class="team-member">
+          <div class="avatar av-m">ML<span class="status-ring" id="ring-mick"></span></div>
+          <div style="flex:1"><div class="member-name">Mick Lee</div><div class="member-role">Director</div></div>
+          <span class="member-status-label sl-away" id="label-mick">--</span>
+        </div>
+        <hr class="team-divider"/>
+        <div class="team-member">
+          <div class="avatar av-a">AM<span class="status-ring" id="ring-andrea"></span></div>
+          <div style="flex:1"><div class="member-name">Andrea Michell</div><div class="member-role">Principal Education Consultant</div></div>
+          <span class="member-status-label sl-away" id="label-andrea">--</span>
+        </div>
+      </div>
+      <div class="graph-status"><span class="gs-dot" id="team-dot"></span><span id="team-status-text">Loading...</span></div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-muted)">
+        <div style="margin-bottom:4px">&#127970; Mick &mdash; Perth, WA</div>
+        <div>&#9992;&#65039; Andrea &mdash; <span id="andrea-loc-text">Perth, WA</span></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        SharePoint search
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="sp-search-input" type="text" placeholder="Search files, proposals, templates..." autocomplete="off"/>
+      </div>
+      <div class="recent-label">Recent files</div>
+      <div id="recent-list">
+        <a class="recent-file" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd/Projects/PMV" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="recent-file-name">PMV_SOW_DRAFT.docx</span><span class="recent-file-date">Jan</span></a>
+        <a class="recent-file" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd/Projects/Radia" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="recent-file-name">Radia x NE Proposal.pdf</span><span class="recent-file-date">Feb</span></a>
+        <a class="recent-file" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd/Marketing" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span class="recent-file-name">TikTok_Scripts_1.docx</span><span class="recent-file-date">May</span></a>
+      </div>
+      <div id="sp-search-results"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Quick links
+      </div>
+      <div class="qlink-list">
+        <a class="qlink" href="https://nucleusevolution.com.au" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>NE website</a>
+        <a class="qlink" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd/Projects" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>Projects folder</a>
+        <a class="qlink" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd/Template" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>Templates</a>
+        <a class="qlink" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd/Marketing" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>Marketing assets</a>
+        <a class="qlink" href="https://outlook.office365.com/calendar" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Outlook calendar</a>
+        <a class="qlink" href="https://teams.microsoft.com" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Microsoft Teams</a>
+        <a class="qlink" href="https://nucleusevolution-my.sharepoint.com/personal/mick_nucleusevolution_com_au/Documents/Nucleus%20Evolution%20Pty%20Ltd" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>All SharePoint files</a>
+        <a class="qlink" href="https://www.linkedin.com/company/nucleus-evolution" target="_blank"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>LinkedIn</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var CLIENT_ID = 'PLACEHOLDER_CLIENT_ID';
+var TENANT_ID = 'PLACEHOLDER_TENANT_ID';
+var REDIRECT  = 'https://nucleusevolution.github.io/ne-hub/';
+var MICK      = 'mick@nucleusevolution.com.au';
+var ANDREA    = 'andrea@nucleusevolution.com.au';
+var graphToken = null;
+var calCache   = { mick: null, andrea: null };
+
+window.addEventListener('DOMContentLoaded', function(){
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  var hash = window.location.hash || '';
+  var match = hash.match(/access_token=([^&]+)/);
+  if(match){
+    graphToken = decodeURIComponent(match[1]);
+    history.replaceState(null,'',window.location.pathname);
+    onSignedIn();
+  } else {
+    showSignInBtn();
+  }
+  initSearch();
+  fallbackPresence();
+});
+
+function showSignInBtn(){
+  document.getElementById('signin-btn').style.display = 'flex';
+  setCalStatus('warn','Sign in to load live calendar');
+}
+
+function signIn(){
+  var scopes = 'Calendars.Read Presence.Read.All User.Read Files.Read';
+  window.location.href = 'https://login.microsoftonline.com/'+TENANT_ID+
+    '/oauth2/v2.0/authorize?client_id='+CLIENT_ID+
+    '&response_type=token'+
+    '&redirect_uri='+encodeURIComponent(REDIRECT)+
+    '&scope='+encodeURIComponent(scopes)+
+    '&response_mode=fragment'+
+    '&nonce='+Math.random().toString(36).slice(2);
+}
+
+function onSignedIn(){
+  document.getElementById('signin-btn').style.display = 'none';
+  loadCalendar('mick');
+  loadPresence();
+  loadProjects();
+}
+
+function gFetch(url,cb,errCb){
+  fetch(url,{headers:{Authorization:'Bearer '+graphToken}})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(cb).catch(errCb||function(e){console.error(e);});
+}
+
+function loadCalendar(who){
+  if(calCache[who]){renderCalendar(calCache[who]);return;}
+  setCalStatus('','Loading '+(who==='mick'?'Mick':'Andrea')+'\'s calendar...');
+  document.getElementById('cal-list').innerHTML='<div class="cal-loading"><div class="skeleton" style="width:80%;margin:0 auto 8px"></div><div class="skeleton" style="width:60%;margin:0 auto"></div></div>';
+  var now=new Date().toISOString();
+  var ahead=new Date(Date.now()+60*24*3600*1000).toISOString();
+  gFetch('https://graph.microsoft.com/v1.0/users/'+(who==='mick'?MICK:ANDREA)+'/calendarview?startdatetime='+now+'&enddatetime='+ahead+'&$orderby=start/dateTime&$top=15&$select=subject,start,end,location,categories',
+    function(data){
+      calCache[who]=data.value||[];
+      renderCalendar(calCache[who]);
+      if(who==='mick') document.getElementById('stat-events').textContent=calCache[who].length;
+      setCalStatus('ok','Live - Graph - '+calCache[who].length+' events');
+    },
+    function(){setCalStatus('err','Could not load calendar');document.getElementById('cal-list').innerHTML='<div class="cal-error">Could not load calendar.</div>';}
+  );
+}
+
+function renderCalendar(events){
+  var list=document.getElementById('cal-list');
+  if(!events.length){list.innerHTML='<div class="cal-error">No upcoming events in the next 60 days.</div>';return;}
+  list.innerHTML='';
+  var cat=document.querySelector('.filter-row .ftab.active');
+  cat=cat?cat.textContent.trim().toLowerCase():'all';
+  events.forEach(function(ev){
+    var d=new Date(ev.start.dateTime||ev.start);
+    var c=guessCat(ev.subject,ev.categories);
+    var el=document.createElement('div');
+    el.className='cal-event';el.dataset.cat=c.key;
+    el.style.display=(cat==='all'||c.key===cat)?'flex':'none';
+    el.innerHTML='<div class="cal-date-block"><div class="cal-day">'+d.getDate()+'</div><div class="cal-month">'+d.toLocaleString('en-AU',{month:'short'})+'</div></div><div class="cal-body"><div class="cal-title-text">'+ev.subject+' <span class="cal-badge '+c.badge+'">'+c.label+'</span></div><div class="cal-meta">'+d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})+(ev.location&&ev.location.displayName?' - '+ev.location.displayName:'')+'</div></div>';
+    list.appendChild(el);
+  });
+}
+
+function guessCat(s,cats){
+  s=(s||'').toLowerCase();var c=(cats||[]).join(' ').toLowerCase();
+  if(/flight|travel|airport/.test(s+c)) return {key:'travel',badge:'b-travel',label:'travel'};
+  if(/physio|doctor|health|hospital|procedure|medical/.test(s+c)) return {key:'health',badge:'b-health',label:'health'};
+  if(/summit|conference|breakfast|expo|forum|workshop|training|laughter|frontline/.test(s+c)) return {key:'biz',badge:'b-event',label:'event'};
+  if(/meeting|call|client|proposal|review/.test(s+c)) return {key:'biz',badge:'b-biz',label:'business'};
+  return {key:'other',badge:'b-biz',label:'other'};
+}
+
+function setCalStatus(state,msg){
+  var dot=document.getElementById('cal-dot');if(dot)dot.className='gs-dot'+(state?' '+state:'');
+  var txt=document.getElementById('cal-status-text');if(txt)txt.textContent=msg;
+}
+
+function switchCal(who){
+  document.getElementById('btn-mick').classList.toggle('active',who==='mick');
+  document.getElementById('btn-andrea').classList.toggle('active',who==='andrea');
+  if(graphToken){loadCalendar(who);}else{showSignInBtn();}
+}
+
+function filterCal(cat,btn){
+  btn.parentNode.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.cal-event').forEach(function(el){
+    el.style.display=(cat==='all'||el.dataset.cat===cat)?'flex':'none';
+  });
+}
+
+function loadProjects(){
+  gFetch('https://graph.microsoft.com/v1.0/me/drive/root:/Nucleus Evolution Pty Ltd/Projects:/children?$select=name,webUrl,folder&$top=50',
+    function(data){
+      var cols=['si-navy','si-violet','si-emerald','si-amber','si-navy','si-violet','si-emerald','si-amber'];
+      var folders=(data.value||[]).filter(function(f){return f.folder&&f.name.toLowerCase()!=='archive'&&f.name.toLowerCase()!=='inactive';});
+      var grid=document.getElementById('proj-grid');grid.innerHTML='';
+      if(!folders.length){grid.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:8px;grid-column:1/-1">No active projects found.</div>';return;}
+      folders.forEach(function(f,i){
+        var a=document.createElement('a');a.className='proj-tile';a.href=f.webUrl||'#';a.target='_blank';
+        a.innerHTML='<div class="proj-icon-block '+cols[i%cols.length]+'">&#128193;</div><div><div class="proj-tile-name">'+f.name+'</div><div class="proj-tile-type">Active project</div></div>';
+        grid.appendChild(a);
+      });
+      document.getElementById('stat-projects').textContent=folders.length;
+      var pc=document.getElementById('proj-count');if(pc)pc.textContent=folders.length+' active';
+      var pd=document.getElementById('proj-dot');if(pd)pd.className='gs-dot ok';
+      var ps=document.getElementById('proj-status-text');if(ps)ps.textContent='Live - SharePoint - '+folders.length+' projects';
+    },
+    function(){var pd=document.getElementById('proj-dot');if(pd)pd.className='gs-dot err';var ps=document.getElementById('proj-status-text');if(ps)ps.textContent='Could not load projects';}
+  );
+}
+
+function loadPresence(){
+  fetch('https://graph.microsoft.com/v1.0/communications/getPresencesByUserId',{
+    method:'POST',headers:{Authorization:'Bearer '+graphToken,'Content-Type':'application/json'},
+    body:JSON.stringify({ids:[MICK,ANDREA]})
+  }).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(data){
+    (data.value||[]).forEach(function(p){applyPresence(p.id.toLowerCase().includes('andrea')?'andrea':'mick',p.availability);});
+    document.getElementById('team-dot').className='gs-dot ok';
+    document.getElementById('team-status-text').textContent='Live - Microsoft Graph Presence';
+  }).catch(function(){fallbackPresence();});
+}
+
+function applyPresence(id,availability){
+  var map={Available:{cls:'s-available',lbl:'sl-available',text:'Available'},Busy:{cls:'s-busy',lbl:'sl-busy',text:'Busy'},DoNotDisturb:{cls:'s-busy',lbl:'sl-busy',text:'Do not disturb'},Away:{cls:'s-away',lbl:'sl-away',text:'Away'},BeRightBack:{cls:'s-away',lbl:'sl-away',text:'Back soon'},Offline:{cls:'s-away',lbl:'sl-away',text:'Offline'}};
+  var state=map[availability]||{cls:'s-away',lbl:'sl-away',text:availability||'--'};
+  var ring=document.getElementById('ring-'+id);var label=document.getElementById('label-'+id);
+  if(ring)ring.className='status-ring '+state.cls;
+  if(label){label.className='member-status-label '+state.lbl;label.textContent=state.text;}
+}
+
+function fallbackPresence(){
+  var now=new Date();var h=now.getHours();var work=h>=8&&h<18&&now.getDay()>0&&now.getDay()<6;
+  applyPresence('mick',work?'Available':'Away');
+  var jun22=new Date('2026-06-22');var jun25=new Date('2026-06-25');
+  applyPresence('andrea',(now>=jun22&&now<=jun25)?'Busy':(work?'Available':'Away'));
+  if(now>=jun22&&now<=jun25){var al=document.getElementById('andrea-loc-text');if(al)al.textContent='Newman, WA (field trip)';}
+  document.getElementById('team-dot').className='gs-dot warn';
+  document.getElementById('team-status-text').textContent='Presence estimated from schedule';
+}
+
+function initSearch(){
+  var input=document.getElementById('sp-search-input');
+  var results=document.getElementById('sp-search-results');
+  var recent=document.getElementById('recent-list');
+  var timer;
+  input.addEventListener('input',function(){
+    clearTimeout(timer);var q=input.value.trim();
+    if(!q){results.innerHTML='';recent.style.display='';return;}
+    recent.style.display='none';
+    timer=setTimeout(function(){
+      results.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:8px 0"><a href="https://nucleusevolution-my.sharepoint.com/_layouts/15/osssearchresults.aspx?q='+encodeURIComponent(q)+'" target="_blank" style="color:var(--navy)">Search "'+q+'" on SharePoint &rarr;</a></div>';
+    },400);
+  });
+}
+</script>
+</body>
+</html>
