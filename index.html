@@ -321,7 +321,7 @@ function renderCalendar(events){
     var el=document.createElement('div');
     el.className='cal-event';el.dataset.cat=c.key;
     el.style.display=(cat==='all'||c.key===cat)?'flex':'none';
-    el.innerHTML='<div class="cal-date-block"><div class="cal-day">'+d.getDate()+'</div><div class="cal-month">'+d.toLocaleString('en-AU',{month:'short'})+'</div></div><div class="cal-body"><div class="cal-title-text">'+ev.subject+' <span class="cal-badge '+c.badge+'">'+c.label+'</span></div><div class="cal-meta">'+d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})+(ev.location&&ev.location.displayName?' - '+ev.location.displayName:'')+'</div></div>';
+    el.innerHTML='<div class="cal-date-block"><div class="cal-day">'+d.getDate()+'</div><div class="cal-month">'+d.toLocaleString('en-AU',{month:'short'})+'</div></div><div class="cal-body"><div class="cal-title-text">'+ev.subject+' <span class="cal-badge '+c.badge+'">'+c.label+'</span></div><div class="cal-meta">'+d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit',timeZone:'Australia/Perth'})+(ev.location&&ev.location.displayName?' - '+ev.location.displayName:'')+'</div></div>';
     list.appendChild(el);
   });
 }
