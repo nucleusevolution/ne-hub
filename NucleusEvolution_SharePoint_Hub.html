@@ -1,0 +1,199 @@
+<script>
+var CLIENT_ID = 'PLACEHOLDER_CLIENT_ID';
+var TENANT_ID = 'PLACEHOLDER_TENANT_ID';
+var REDIRECT  = 'https://nucleusevolution.github.io/ne-hub/';
+var MICK      = 'mick@nucleusevolution.com.au';
+var ANDREA    = 'andrea@nucleusevolution.com.au';
+var graphToken = null;
+var calCache   = { mick: null, andrea: null };
+
+document.getElementById('today-date').textContent =
+  new Date().toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+
+(function boot(){
+  var hash = window.location.hash || '';
+  var match = hash.match(/access_token=([^&]+)/);
+  if(match){
+    graphToken = decodeURIComponent(match[1]);
+    history.replaceState(null, '', window.location.pathname);
+    onSignedIn();
+  } else {
+    showSignInBtn();
+  }
+})();
+
+function showSignInBtn(){
+  document.getElementById('signin-btn').style.display = 'flex';
+  setCalStatus('warn','Sign in to load live calendar');
+  fallbackPresence();
+}
+
+function signIn(){
+  var scopes = 'Calendars.Read Presence.Read.All User.Read Files.Read';
+  window.location.href = 'https://login.microsoftonline.com/' + TENANT_ID +
+    '/oauth2/v2.0/authorize?client_id=' + CLIENT_ID +
+    '&response_type=token' +
+    '&redirect_uri=' + encodeURIComponent(REDIRECT) +
+    '&scope=' + encodeURIComponent(scopes) +
+    '&response_mode=fragment' +
+    '&nonce=' + Math.random().toString(36).slice(2);
+}
+
+function onSignedIn(){
+  document.getElementById('signin-btn').style.display = 'none';
+  loadCalendar('mick');
+  loadPresence();
+  loadProjects();
+}
+
+function gFetch(url, cb, errCb){
+  fetch(url, { headers:{ Authorization:'Bearer '+graphToken }})
+    .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(cb).catch(errCb || function(e){ console.error(e); });
+}
+
+function loadCalendar(who){
+  if(calCache[who]){ renderCalendar(calCache[who]); return; }
+  setCalStatus('','Loading calendar...');
+  showCalSkeleton();
+  var now   = new Date().toISOString();
+  var ahead = new Date(Date.now() + 60*24*3600*1000).toISOString();
+  var email = who==='mick' ? MICK : ANDREA;
+  gFetch(
+    'https://graph.microsoft.com/v1.0/users/'+email+
+    '/calendarview?startdatetime='+now+'&enddatetime='+ahead+
+    '&$orderby=start/dateTime&$top=15&$select=subject,start,end,location,categories',
+    function(data){
+      calCache[who] = data.value||[];
+      renderCalendar(calCache[who]);
+      if(who==='mick') document.getElementById('stat-events').textContent = calCache[who].length;
+      setCalStatus('ok','Live - Microsoft Graph - '+calCache[who].length+' events');
+    },
+    function(){ setCalStatus('err','Could not load calendar'); document.getElementById('cal-list').innerHTML='<div class="cal-error">Could not load calendar.</div>'; }
+  );
+}
+
+function showCalSkeleton(){
+  document.getElementById('cal-list').innerHTML='<div class="cal-loading"><div class="skeleton" style="width:80%;margin:0 auto 8px"></div><div class="skeleton" style="width:60%;margin:0 auto"></div></div>';
+}
+
+function renderCalendar(events){
+  var list = document.getElementById('cal-list');
+  if(!events.length){ list.innerHTML='<div class="cal-error">No upcoming events.</div>'; return; }
+  list.innerHTML='';
+  var activeFilter = document.querySelector('.filter-row .ftab.active');
+  var cat = activeFilter ? activeFilter.textContent.trim().toLowerCase() : 'all';
+  events.forEach(function(ev){
+    var d=new Date(ev.start.dateTime||ev.start);
+    var c=guessCat(ev.subject,ev.categories);
+    var el=document.createElement('div');
+    el.className='cal-event'; el.dataset.cat=c.key;
+    el.style.display=(cat==='all'||c.key===cat)?'flex':'none';
+    el.innerHTML='<div class="cal-date-block"><div class="cal-day">'+d.getDate()+'</div><div class="cal-month">'+d.toLocaleString('en-AU',{month:'short'})+'</div></div><div class="cal-body"><div class="cal-title-text">'+ev.subject+' <span class="cal-badge '+c.badge+'">'+c.label+'</span></div><div class="cal-meta">'+d.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})+(ev.location&&ev.location.displayName?' - '+ev.location.displayName:'')+'</div></div>';
+    list.appendChild(el);
+  });
+}
+
+function guessCat(subject,cats){
+  var s=(subject||'').toLowerCase(); var c=(cats||[]).join(' ').toLowerCase();
+  if(/flight|travel|airport/.test(s+c)) return {key:'travel',badge:'b-travel',label:'travel'};
+  if(/physio|doctor|health|hospital|procedure|medical/.test(s+c)) return {key:'health',badge:'b-health',label:'health'};
+  if(/summit|conference|breakfast|expo|forum|workshop|training|laughter|frontline/.test(s+c)) return {key:'biz',badge:'b-event',label:'event'};
+  if(/meeting|call|client|proposal|review/.test(s+c)) return {key:'biz',badge:'b-biz',label:'business'};
+  return {key:'other',badge:'b-biz',label:'other'};
+}
+
+function setCalStatus(state,msg){
+  var dot=document.getElementById('cal-dot'); if(dot) dot.className='gs-dot'+(state?' '+state:'');
+  var txt=document.getElementById('cal-status-text'); if(txt) txt.textContent=msg;
+}
+
+function switchCal(who){
+  document.getElementById('btn-mick').classList.toggle('active',who==='mick');
+  document.getElementById('btn-andrea').classList.toggle('active',who==='andrea');
+  if(graphToken){ loadCalendar(who); } else { showSignInBtn(); }
+}
+
+function filterCal(cat,btn){
+  btn.parentNode.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.cal-event').forEach(function(el){
+    el.style.display=(cat==='all'||el.dataset.cat===cat)?'flex':'none';
+  });
+}
+
+function filterProj(cat,btn){
+  btn.parentNode.querySelectorAll('.ftab').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.proj-tile').forEach(function(el){
+    el.style.display=(cat==='all'||el.dataset.cat===cat)?'flex':'none';
+  });
+}
+
+function loadProjects(){
+  gFetch(
+    "https://graph.microsoft.com/v1.0/me/drive/root:/Nucleus Evolution Pty Ltd/Projects:/children?$select=name,webUrl,folder&$top=50",
+    function(data){
+      var cols=['si-navy','si-violet','si-emerald','si-amber','si-navy','si-violet','si-emerald','si-amber'];
+      var folders=(data.value||[]).filter(function(f){ return f.folder&&f.name.toLowerCase()!=='archive'&&f.name.toLowerCase()!=='inactive'; });
+      var grid=document.getElementById('proj-grid'); grid.innerHTML='';
+      if(!folders.length){ grid.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:8px;grid-column:1/-1">No active projects found.</div>'; return; }
+      folders.forEach(function(f,i){
+        var a=document.createElement('a'); a.className='proj-tile'; a.href=f.webUrl||'#'; a.target='_blank';
+        a.innerHTML='<div class="proj-icon-block '+cols[i%cols.length]+'">&#128193;</div><div><div class="proj-tile-name">'+f.name+'</div><div class="proj-tile-type">Active project</div></div>';
+        grid.appendChild(a);
+      });
+      var pc=document.getElementById('proj-count'); if(pc) pc.textContent=folders.length+' active';
+      var pd=document.getElementById('proj-dot'); if(pd) pd.className='gs-dot ok';
+      var ps=document.getElementById('proj-status-text'); if(ps) ps.textContent='Live - SharePoint - '+folders.length+' projects';
+    },
+    function(){ var pd=document.getElementById('proj-dot'); if(pd) pd.className='gs-dot err'; }
+  );
+}
+
+function loadPresence(){
+  fetch('https://graph.microsoft.com/v1.0/communications/getPresencesByUserId',{
+    method:'POST', headers:{Authorization:'Bearer '+graphToken,'Content-Type':'application/json'},
+    body:JSON.stringify({ids:[MICK,ANDREA]})
+  }).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(data){
+    (data.value||[]).forEach(function(p){ applyPresence(p.id.toLowerCase().includes('andrea')?'andrea':'mick',p.availability); });
+    document.getElementById('team-dot').className='gs-dot ok';
+    document.getElementById('team-status-text').textContent='Live - Microsoft Graph Presence';
+  }).catch(function(){fallbackPresence();});
+}
+
+function applyPresence(id,availability){
+  var map={'Available':{cls:'s-available',lbl:'sl-available',text:'Available'},'Busy':{cls:'s-busy',lbl:'sl-busy',text:'Busy'},'DoNotDisturb':{cls:'s-busy',lbl:'sl-busy',text:'Do not disturb'},'Away':{cls:'s-away',lbl:'sl-away',text:'Away'},'BeRightBack':{cls:'s-away',lbl:'sl-away',text:'Back soon'},'Offline':{cls:'s-away',lbl:'sl-away',text:'Offline'}};
+  var state=map[availability]||{cls:'s-away',lbl:'sl-away',text:availability||'--'};
+  var ring=document.getElementById('ring-'+id); var label=document.getElementById('label-'+id);
+  if(ring) ring.className='status-ring '+state.cls;
+  if(label){label.className='member-status-label '+state.lbl;label.textContent=state.text;}
+}
+
+function fallbackPresence(){
+  var now=new Date(); var h=now.getHours(); var work=h>=8&&h<18&&now.getDay()>0&&now.getDay()<6;
+  applyPresence('mick',work?'Available':'Away');
+  var jun22=new Date('2026-06-22'); var jun25=new Date('2026-06-25');
+  applyPresence('andrea',(now>=jun22&&now<=jun25)?'Busy':(work?'Available':'Away'));
+  document.getElementById('team-dot').className='gs-dot warn';
+  document.getElementById('team-status-text').textContent='Presence estimated from schedule';
+}
+
+(function(){
+  var input=document.getElementById('sp-search-input');
+  var results=document.getElementById('sp-search-results');
+  var recent=document.getElementById('recent-list');
+  var timer;
+  input.addEventListener('input',function(){
+    clearTimeout(timer); var q=input.value.trim();
+    if(!q){results.innerHTML='';recent.style.display='';return;}
+    recent.style.display='none';
+    timer=setTimeout(function(){
+      results.innerHTML='<div style="font-size:12px;color:var(--text-muted);padding:8px 0"><a href="https://nucleusevolution-my.sharepoint.com/_layouts/15/osssearchresults.aspx?q='+encodeURIComponent(q)+'" target="_blank" style="color:var(--navy)">Search "'+q+'" on SharePoint</a></div>';
+    },400);
+  });
+})();
+</script>
+</body>
+</html>
