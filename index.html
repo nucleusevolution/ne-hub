@@ -280,12 +280,11 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;font-size:14px;li
 </div>
 
 <script>
-/* ── MSAL config — Microsoft identity login for Graph API ── */
-var MSAL_CONFIG = {
-  clientId: '0bca32f1-be25-42df-9ce5-bb2276bb6001',
-  'https://login.microsoftonline.com/98efcc0b-1d9a-4c60-b0f5-40c62f35bce2',
-  redirectUri: 'https://nucleusevolution.github.io/ne-hub/'
-};
+/* ── Force sign in button visible immediately ── */
+window.addEventListener('DOMContentLoaded', function(){
+  var btn = document.getElementById('signin-btn');
+  if(btn) btn.style.display = 'flex';
+});
 
 /* ── User emails ── */
 var USERS = {
