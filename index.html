@@ -305,31 +305,17 @@ var calCache = { mick: null, andrea: null };
   document.getElementById('today-date').textContent = d.toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
 })();
 
-/* ── Load MSAL library then boot ── */
+/* ── Simple OAuth boot ── */
 (function(){
-  var s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.11.1/lib/msal-browser.min.js';
-  s.onload = function(){ initMsal(); };
-  s.onerror = function(){ fallbackMode(); };
-  document.head.appendChild(s);
+  var hash = window.location.hash;
+  if(hash && hash.includes('access_token')){
+    var match = hash.match(/access_token=([^&]+)/);
+    if(match){ graphToken = decodeURIComponent(match[1]); onSignedIn(); return; }
+  }
+  document.getElementById('signin-btn').style.display = 'flex';
+  setCalStatus('warn','Sign in to load live calendar');
+  fallbackPresence();
 })();
-
-function initMsal(){
-  try {
-    msalInstance = new msal.PublicClientApplication({
-      auth: { clientId: MSAL_CONFIG.clientId, authority: MSAL_CONFIG.authority, redirectUri: MSAL_CONFIG.redirectUri },
-      cache: { cacheLocation: 'sessionStorage' }
-    });
-    msalInstance.initialize().then(function(){
-      document.getElementById('signin-btn').style.display = 'flex';
-      setCalStatus('warn','Sign in to load live calendar');
-      fallbackPresence();
-      msalInstance.handleRedirectPromise().then(function(resp){
-        if(resp && resp.accessToken){ graphToken = resp.accessToken; document.getElementById('signin-btn').style.display = 'none'; onSignedIn(); }
-      }).catch(function(){});
-    });
-  } catch(e){ fallbackMode(); }
-}
 
 function trySilent(){
   var accounts = msalInstance.getAllAccounts();
@@ -346,14 +332,11 @@ function showSignInBtn(){
 }
 
 function signIn(){
-  msalInstance.loginRedirect({ scopes: ['Calendars.Read','Presence.Read.All','User.Read'] });
-}
-
-function onSignedIn(){
-  document.getElementById('signin-btn').style.display = 'none';
-  loadCalendar('mick');
-  loadPresence();
-  loadProjects();
+  var clientId = '0bca32f1-be25-42df-9ce5-bb2276bb6001';
+  var tenantId = '98efcc0b-1d9a-4c60-b0f5-40c62f35bce2';
+  var redirect = encodeURIComponent('https://nucleusevolution.github.io/ne-hub/');
+  var scopes = encodeURIComponent('Calendars.Read Presence.Read.All User.Read Files.Read');
+  window.location.href = 'https://login.microsoftonline.com/'+tenantId+'/oauth2/v2.0/authorize?client_id='+clientId+'&response_type=token&redirect_uri='+redirect+'&scope='+scopes+'&response_mode=fragment';
 }
 
 /* ── Load projects live from SharePoint Projects folder ── */
