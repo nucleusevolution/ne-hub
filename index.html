@@ -298,16 +298,16 @@ function loadCalendar(who){
   document.getElementById('cal-list').innerHTML='<div class="cal-loading"><div class="skeleton" style="width:80%;margin:0 auto 8px"></div><div class="skeleton" style="width:60%;margin:0 auto"></div></div>';
   var now=new Date().toISOString();
   var ahead=new Date(Date.now()+60*24*3600*1000).toISOString();
-  gFetch('https://graph.microsoft.com/v1.0/users/'+(who==='mick'?MICK:ANDREA)+'/calendarview?startdatetime='+now+'&enddatetime='+ahead+'&$orderby=start/dateTime&$top=15&$select=subject,start,end,location,categories',
-    function(data){
+fetch('https://graph.microsoft.com/v1.0/users/'+(who==='mick'?MICK:ANDREA)+'/calendarview?startdatetime='+now+'&enddatetime='+ahead+'&$orderby=start/dateTime&$top=15&$select=subject,start,end,location,categories',
+    {headers:{Authorization:'Bearer '+graphToken,'Prefer':'outlook.timezone="Australia/Perth"'}})
+    .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+    .then(function(data){
       calCache[who]=data.value||[];
       renderCalendar(calCache[who]);
       if(who==='mick') document.getElementById('stat-events').textContent=calCache[who].length;
       setCalStatus('ok','Live - Graph - '+calCache[who].length+' events');
-    },
-    function(){setCalStatus('err','Could not load calendar');document.getElementById('cal-list').innerHTML='<div class="cal-error">Could not load calendar.</div>';}
-  );
-}
+    })
+    .catch(function(){setCalStatus('err','Could not load calendar');document.getElementById('cal-list').innerHTML='<div class="cal-error">Could not load calendar.</div>';});
 
 function renderCalendar(events){
   var list=document.getElementById('cal-list');
